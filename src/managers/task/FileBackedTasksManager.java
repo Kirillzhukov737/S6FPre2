@@ -154,7 +154,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
                 String header = "id,type,name,status,description,epic";
                 bw.write(header);
             }
-            String results = UtilityManagers.tasksToString(this) + "\n" + UtilityManagers.historyToString(UtilityManagers.getHistoryManager());
+            String results = UtilityManagers.tasksToString(this) + "\n"
+                    //+ UtilityManagers.historyToString(UtilityManagers.getHistoryManager())
+            ;
             bw.write(results);
         } catch (IOException e) {
             throw new RuntimeException(e);

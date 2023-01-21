@@ -9,12 +9,10 @@ public class Epic extends Task {
     private List<SubTask> subTaskList;
     protected Epic EpicType;
 
-    public Epic(Long id, TaskType taskType, String name, TaskStatus status, String description) {
-        super(id, taskType, name, status, description);
+    public Epic(Long id, String name, String description, TaskStatus status, TaskType taskType) {
+        super(id, name, description, status, taskType);
         subTaskList = new ArrayList<>();
     }
-
-
 
     public List<SubTask> getSubTaskList() {
         return subTaskList;
@@ -34,3 +32,4 @@ public class Epic extends Task {
                 + EpicType;
     }
 }
+

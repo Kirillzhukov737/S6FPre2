@@ -20,13 +20,13 @@ public final class UtilityManagers {
         String description = values[4];
         Long epicId = Long.valueOf(values[5]);
         if (type.equals(TaskType.TASK)) {
-            return new Task(id, type, name, status, description);
+            return new Task(id, name, description, status, type);
         }
         if (type.equals((TaskType.SUBTASK))) {
-            return new SubTask(id, type, name, status, description, epicId);
+            return new SubTask(id, name, description, status, type, epicId);
         }
         if (type.equals((TaskType.EPIC))) {
-            return new SubTask(id, type, name, status, description, epicId);
+            return new SubTask(id, name, description, status, type, epicId);
         }
         return null;
     }

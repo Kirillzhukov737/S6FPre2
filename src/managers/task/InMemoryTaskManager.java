@@ -3,24 +3,36 @@ package managers.task;
 import managers.Managers;
 import managers.history.HistoryManager;
 import managers.task.TaskManager;
-import model.Epic;
-import model.SubTask;
-import model.Task;
-import model.TaskStatus;
+import model.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class InMemoryTaskManager implements TaskManager {
+public class InMemoryTaskManager implements TaskManager, Comparator<Task> {
 
     private Long taskMaxId = 0L;
+    private Set<Task> priorityTasks = new TreeSet<>(this);
     protected static HistoryManager historyManager = Managers.getHistoryManager();
     private final Map<Long, Epic> epics = new HashMap<>(); // Создаю мап для эпиков: ключ(id), значение(эпик)
     private final Map<Long, Task> tasks = new HashMap<>();
     private final Map<Long, SubTask> subTasks = new HashMap<>();
 
+    private void addPrioritiesTask(Task task){
+        checkIntersections();
+        priorityTasks.add(task);
+    }
+    public List<Task> getPrioritizedTasks(){
+        return new ArrayList<>(priorityTasks);
+    }
+
+    public void checkIntersections(){
+        var priorityTasks = getPrioritizedTasks();
+        for(int i = 1; i < priorityTasks.size(); i++){
+            if(priorityTasks.get(i).getStartTime().isBefore(priorityTasks.get(i-1).getStartTime())){
+                throw new IntersectionsException("Найдено пересечение между"
+                        +priorityTasks.get(i) + " и "+priorityTasks.get(i-1));
+            }
+        }
+    }
     @Override
     public List<Epic> getAllEpic() {
         return new ArrayList<>(epics.values());
@@ -45,6 +57,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic != null && !epics.containsKey(epic.getId())) {
             epics.put(epic.getId(), epic);
         }
+        addPrioritiesTask(epic);
         return epic;
     }
 
@@ -90,6 +103,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (!subTasks.containsKey(subTask.getId())) {
             subTasks.put(subTask.getId(), subTask);
         }
+        addPrioritiesTask(subTask);
         return subTask;
     }
 
@@ -122,7 +136,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getAllTask() {
-        return (List<Task>) tasks.values();
+        return new ArrayList<>(tasks.values());
     }
 
     @Override
@@ -145,9 +159,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task addTask(Task task) {
         task.setId(taskMaxId++);//добавлению новый таск в мапу и возвращаю добавленный сабтаск
-        if (task != null && !tasks.containsKey(task.getId())) {
-            tasks.put(task.getId(), task);
-        }
+        tasks.put(task.getId(), task);
+        addPrioritiesTask(task);
         return task;
     }
 
@@ -166,5 +179,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<SubTask> getAllSubtaskByEpic(Epic epic) {
         return epic.getSubTaskList();
+    }
+
+    @Override
+    public int compare(Task o1, Task o2) {
+        return o1.getStartTime().compareTo(o2.getStartTime());
     }
 }
